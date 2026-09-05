@@ -1,3 +1,4 @@
+from backend.app.models import CheckSession
 import logging
 from typing import List, Optional
 from datetime import datetime, timezone
@@ -9,6 +10,7 @@ from backend.app.models.user import User
 from backend.app.models.watchlist import Watchlist
 from backend.app.models.watchlist_item import WatchlistItem
 from backend.app.models.thesis import Thesis
+from backend.app.models.check_session import CheckSession  
 from backend.app.models.thesis_signal import ThesisSignal
 from backend.app.schemas.watchlist import (
     WatchlistCreate,
@@ -363,23 +365,23 @@ def delete_stock(
         raise HTTPException(status_code=404, detail=f"Stock {clean_symbol} not found in watchlist")
 
     # Clean up associated thesis and signals
-    theses = db.query(Thesis).filter(Thesis.watchlistItemId == item.id).all()
+    check_sessions = db.query(CheckSession).filter(
+        CheckSession.watchlistItemId == item.id
+    ).all()
+
+    for session in check_sessions:
+        db.delete(session)
+
+    theses = db.query(Thesis).filter(
+        Thesis.watchlistItemId == item.id
+    ).all()
+
     for th in theses:
         db.delete(th)
 
     deleted_sym = item.symbol
     company_name = item.companyName
+
+    # Finally delete the watchlist item
     db.delete(item)
     db.commit()
-
-    # Re-evaluate watchlist so overall summary counts stay updated
-    try:
-        thesis_evaluator.evaluate_watchlist(db, watchlist_id)
-    except Exception as e:
-        logger.warning(f"Error updating watchlist evaluation after deletion: {e}")
-
-    return {
-        "message": f"Successfully removed {company_name} ({deleted_sym}) from watchlist.",
-        "symbol": deleted_sym
-    }
-

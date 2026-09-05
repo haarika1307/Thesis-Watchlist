@@ -1,22 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Thesis Watchlist — Thesis-First Stock Intelligence</title>
-  <meta name="description"
-    content="A thesis-first stock intelligence platform that tracks why you are watching a stock, monitors real-world fundamental and price changes, and classifies supporting versus contradicting evidence.">
+  <meta name="description" content="A thesis-first stock intelligence platform that tracks why you are watching a stock, monitors real-world fundamental and price changes, and classifies supporting versus contradicting evidence.">
 
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="./css/main.css">
-  <link rel="stylesheet" href="./css/components.css">
-  <link rel="stylesheet" href="./css/pages.css">
+  <link rel="stylesheet" href="/static/css/main.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  <link rel="stylesheet" href="/static/css/pages.css">
 
-  <link rel="icon"
-    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
 </head>
-
 <body>
   <div id="app">
     <!-- Top Navigation Bar -->
@@ -88,12 +84,10 @@
           <div class="watchlist-controls">
             <div class="search-container">
               <span class="search-icon-inside">🔍</span>
-              <input type="text" class="search-input" id="watchlist-filter-input"
-                placeholder="Search stocks in watchlist...">
+              <input type="text" class="search-input" id="watchlist-filter-input" placeholder="Search stocks in watchlist...">
             </div>
 
-            <button class="btn btn-secondary" id="btn-refresh-evaluations"
-              title="Run batch thesis evaluation across all stocks">
+            <button class="btn btn-secondary" id="btn-refresh-evaluations" title="Run batch thesis evaluation across all stocks">
               <span class="icon">🔄</span> Re-evaluate
             </button>
 
@@ -151,8 +145,7 @@
 
             <!-- SECTION A: WHAT CHANGED SINCE YOU LAST CHECKED (Normal Change Detection Layer) -->
             <div class="two-layer-card-section" style="margin-bottom: 2rem;">
-              <div
-                style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem; flex-wrap: wrap; gap: 0.5rem;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem; flex-wrap: wrap; gap: 0.5rem;">
                 <div>
                   <h3 style="font-size: 1.15rem; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 0.2rem;">
                     WHAT CHANGED SINCE YOU LAST CHECKED
@@ -172,8 +165,7 @@
             <!-- SECTION B: YOUR THESIS & HOW THE CHANGES RELATE TO YOUR THESIS (Thesis Intelligence Layer) -->
             <div class="two-layer-card-section">
               <div class="thesis-banner" style="margin-bottom: 1.5rem;">
-                <div class="thesis-section-label">YOUR INVESTMENT THESIS • <span
-                    id="thesis-display-category">GROWTH</span></div>
+                <div class="thesis-section-label">YOUR INVESTMENT THESIS • <span id="thesis-display-category">GROWTH</span></div>
                 <div class="thesis-quote-text" id="thesis-display-text">"Loading thesis..."</div>
                 <div class="thesis-status-row">
                   <div style="font-size: 0.85rem; color: var(--text-secondary);">
@@ -187,8 +179,7 @@
                   HOW THE CHANGES RELATE TO YOUR THESIS
                 </h3>
                 <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
-                  Meaningful change does not automatically mean thesis change. Each detected change is interpreted
-                  against your investment reason.
+                  Meaningful change does not automatically mean thesis change. Each detected change is interpreted against your investment reason.
                 </div>
                 <div class="thesis-impact-grid" id="thesis-impact-list">
                   <!-- Injected dynamically: Supports / Works against / Neutral -->
@@ -197,8 +188,7 @@
 
               <div class="see-changes-banner" style="margin-top: 2rem;">
                 <div>
-                  <div class="see-changes-text" id="thesis-signals-changed-note">Detailed Change Analysis Available
-                  </div>
+                  <div class="see-changes-text" id="thesis-signals-changed-note">Detailed Change Analysis Available</div>
                   <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.2rem;">
                     Inspect the full breakdown of market, fundamental, company, and news developments.
                   </div>
@@ -297,8 +287,7 @@
 
         <!-- Tab 4: NEWS -->
         <div class="company-tab-panel" data-panel="news" style="display: none;">
-          <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem; color: #60a5fa;">RELEVANT TO YOUR THESIS
-          </h3>
+          <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem; color: #60a5fa;">RELEVANT TO YOUR THESIS</h3>
           <div class="news-cards-container" id="relevant-news-container" style="margin-bottom: 2.5rem;">
             <!-- Populated dynamically -->
           </div>
@@ -357,8 +346,7 @@
           <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
             <div>
               <h2 class="page-title">WHAT CHANGED?</h2>
-              <div style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.25rem;"
-                id="changes-view-last-checked-note">
+              <div style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.25rem;" id="changes-view-last-checked-note">
                 Comparing current state against your last check session.
               </div>
             </div>
@@ -390,8 +378,7 @@
             <div class="thesis-section-label">YOUR INVESTMENT THESIS</div>
             <div class="thesis-quote-text" id="changes-thesis-text">"Loading thesis..."</div>
             <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.4rem;">
-              The system interprets how the objectively detected changes support, weaken, or relate neutrally to this
-              thesis.
+              The system interprets how the objectively detected changes support, weaken, or relate neutrally to this thesis.
             </div>
           </div>
 
@@ -438,8 +425,7 @@
         <div class="thesis-synthesis-card">
           <div class="synthesis-header">
             <div>
-              <div
-                style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.35rem;">
+              <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.35rem;">
                 DIAGNOSTIC STATUS SYNTHESIS
               </div>
               <div id="synthesis-status-badge" class="status-pill nochange">
@@ -474,10 +460,8 @@
 
           <div class="form-group" style="position: relative;">
             <label class="form-label">Search real listed companies (NSE / BSE / Global)</label>
-            <input type="text" class="text-input" id="modal-search-input"
-              placeholder="e.g. Reliance, Tata Motors, Infosys, KPITTECH, Apple..." autocomplete="off">
-            <span id="search-spinner" class="spinner"
-              style="position: absolute; right: 12px; top: 38px; width: 18px; height: 18px; display: none;"></span>
+            <input type="text" class="text-input" id="modal-search-input" placeholder="e.g. Reliance, Tata Motors, Infosys, KPITTECH, Apple..." autocomplete="off">
+            <span id="search-spinner" class="spinner" style="position: absolute; right: 12px; top: 38px; width: 18px; height: 18px; display: none;"></span>
             <div class="search-results-dropdown" id="modal-search-results">
               <!-- Search item results -->
             </div>
@@ -488,12 +472,9 @@
         <div id="modal-step-thesis" style="display: none;">
           <div class="modal-header">
             <div>
-              <div
-                style="font-size: 0.75rem; font-weight: 700; color: var(--brand-primary); text-transform: uppercase;">
-                ADD TO WATCHLIST</div>
+              <div style="font-size: 0.75rem; font-weight: 700; color: var(--brand-primary); text-transform: uppercase;">ADD TO WATCHLIST</div>
               <h3 class="modal-title" id="modal-selected-company">RELIANCE INDUSTRIES</h3>
-              <span id="modal-selected-symbol" class="company-meta-tag"
-                style="margin-top: 0.25rem; display: inline-block;">RELIANCE.NS</span>
+              <span id="modal-selected-symbol" class="company-meta-tag" style="margin-top: 0.25rem; display: inline-block;">RELIANCE.NS</span>
             </div>
             <button class="modal-close-btn" onclick="window.addStockModal.close()">&times;</button>
           </div>
@@ -530,11 +511,9 @@
 
           <div class="form-group">
             <label class="form-label">OR Tell us in your own words</label>
-            <textarea class="text-input text-area" id="modal-thesis-text"
-              placeholder="e.g. I think Jio growth will continue and improve Reliance's performance."></textarea>
+            <textarea class="text-input text-area" id="modal-thesis-text" placeholder="e.g. I think Jio growth will continue and improve Reliance's performance."></textarea>
             <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem;">
-              The intelligence engine parses your text into structured signals (revenue, margins, deal pipeline,
-              valuation, commentary).
+              The intelligence engine parses your text into structured signals (revenue, margins, deal pipeline, valuation, commentary).
             </div>
           </div>
 
@@ -548,15 +527,14 @@
   </div>
 
   <!-- Scripts in dependency order -->
-  <script src="./js/api.js"></script>
-  <script src="./js/state.js"></script>
-  <script src="./js/charts.js"></script>
-  <script src="./js/home.js"></script>
-  <script src="./js/watchlist.js"></script>
-  <script src="./js/add-stock.js"></script>
-  <script src="./js/company.js"></script>
-  <script src="./js/changes.js"></script>
-  <script src="./js/app.js"></script>
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/state.js"></script>
+  <script src="/static/js/charts.js"></script>
+  <script src="/static/js/home.js"></script>
+  <script src="/static/js/watchlist.js"></script>
+  <script src="/static/js/add-stock.js"></script>
+  <script src="/static/js/company.js"></script>
+  <script src="/static/js/changes.js"></script>
+  <script src="/static/js/app.js"></script>
 </body>
-
 </html>

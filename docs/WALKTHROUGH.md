@@ -1,8 +1,8 @@
-# System Walkthrough & Operational Guide — Smart Watchlist
+# System Walkthrough & Operational Guide — Thesis Watchlist
 
 ## 1. What Was Built
 
-Smart Watchlist is a full-stack, thesis-first financial intelligence platform. It replaces the passive, ticker-and-price paradigm of standard stock watchlists with an active rationale-tracking engine.
+Thesis Watchlist is a full-stack, thesis-first financial intelligence platform. It replaces the passive, ticker-and-price paradigm of standard stock watchlists with an active rationale-tracking engine.
 
 The platform continuously answers three core questions:
 1. **Why am I watching this stock?**
@@ -25,7 +25,7 @@ Traditional stock market tools suffer from severe cognitive fragmentation:
 - Reviewing positions requires manually combing through news feeds, quarterly corporate filings, balance sheets, and charts to discern if something meaningful occurred.
 - Users struggle to weigh positive top-line growth against compressing operating margins or rising debt.
 
-Smart Watchlist resolves this by establishing a clear causal chain:
+Thesis Watchlist resolves this by establishing a clear causal chain:
 $$\text{User Thesis} \longrightarrow \text{Structured Signals} \longrightarrow \text{Real Data Feeds} \longrightarrow \text{Change Detection} \longrightarrow \text{Evidence Classification} \longrightarrow \text{Diagnostic Status}$$
 
 ---

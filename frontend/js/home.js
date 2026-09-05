@@ -1,5 +1,5 @@
 /**
- * Smart Watchlist — Landing Page Component (Home View)
+ * Thesis Watchlist — Landing Page Component (Home View)
  *
  * STRICT RULE: This first screen is a summary of the state of the watchlist.
  * Individual stocks MUST NOT be displayed here.

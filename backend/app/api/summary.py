@@ -23,7 +23,7 @@ def get_watchlist_summary(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Retrieve summary metrics for the initial Smart Watchlist screen."""
+    """Retrieve summary metrics for the initial Thesis Watchlist screen."""
     watchlist = db.query(Watchlist).filter(Watchlist.userId == current_user.id).first()
     if not watchlist:
         return WatchlistSummaryResponse(
@@ -43,19 +43,24 @@ def get_watchlist_summary(
     no_change = 0
     latest_evaluated_at = None
 
-    for item in items:
-        if item.thesis:
-            st = item.thesis.status
-            if item.thesis.lastEvaluatedAt:
-                if latest_evaluated_at is None or item.thesis.lastEvaluatedAt > latest_evaluated_at:
-                    latest_evaluated_at = item.thesis.lastEvaluatedAt
+    from backend.app.services.snapshot.snapshot_service import snapshot_service
 
-            if st == "STRENGTHENING":
-                thesis_changed += 1
-            elif st == "NEEDS_ATTENTION":
-                needs_attention += 1
-            else:
-                no_change += 1
+    for item in items:
+        st = "NO_MEANINGFUL_CHANGE"
+        last_check = snapshot_service.get_last_check_session(db, item.id, item.symbol)
+        if last_check:
+            st = last_check.overallStatus or "NO_MEANINGFUL_CHANGE"
+            if last_check.checkedAt and (latest_evaluated_at is None or last_check.checkedAt > latest_evaluated_at):
+                latest_evaluated_at = last_check.checkedAt
+        elif item.thesis:
+            st = item.thesis.status or "NO_MEANINGFUL_CHANGE"
+            if item.thesis.lastEvaluatedAt and (latest_evaluated_at is None or item.thesis.lastEvaluatedAt > latest_evaluated_at):
+                latest_evaluated_at = item.thesis.lastEvaluatedAt
+
+        if st in ("THESIS_NEEDS_ATTENTION", "NEEDS_ATTENTION"):
+            needs_attention += 1
+        elif st in ("THESIS_STRENGTHENING", "STRENGTHENING", "MEANINGFUL_CHANGE"):
+            thesis_changed += 1
         else:
             no_change += 1
 

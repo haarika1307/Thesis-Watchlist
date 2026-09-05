@@ -1,11 +1,11 @@
-# Architecture Documentation — Smart Watchlist
+# Architecture Documentation — Thesis Watchlist
 
 ## System Overview
 
-Smart Watchlist is a thesis-first stock intelligence platform built to answer the fundamental question:
+Thesis Watchlist is a thesis-first stock intelligence platform built to answer the fundamental question:
 **"Why am I watching this stock, what has changed since I last checked, and does that change support or contradict the reason I was watching it?"**
 
-Unlike conventional watchlists that simply display ticker symbols and fluctuating price points, Smart Watchlist models an investor's rationale and converts it into structured signal profiles. Real-world market feeds, quarterly SEC/MCA regulatory filings, news publications, and management commentaries are continuously ingested, passed through a significance filter, evaluated against user-defined signal directions, and aggregated into a diagnostic health status.
+Unlike conventional watchlists that simply display ticker symbols and fluctuating price points, Thesis Watchlist models an investor's rationale and converts it into structured signal profiles. Real-world market feeds, quarterly SEC/MCA regulatory filings, news publications, and management commentaries are continuously ingested, passed through a significance filter, evaluated against user-defined signal directions, and aggregated into a diagnostic health status.
 
 ---
 

@@ -1,4 +1,4 @@
-# API Specification — Smart Watchlist
+# API Specification — Thesis Watchlist
 
 Base URL: `http://localhost:8000/api`
 

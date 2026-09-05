@@ -1,5 +1,5 @@
 /**
- * Smart Watchlist — My Watchlist View Component
+ * Thesis Watchlist — My Watchlist View Component
  */
 
 class WatchlistView {
@@ -131,15 +131,17 @@ class WatchlistView {
     const changeSign = isPositive ? '+' : '';
     const changeFormatted = `${changeSign}${pct.toFixed(2)}%`;
 
-    // Status format
+    // Status format (incorporating normal meaningful-change + thesis layer)
     let statusPill = '';
-    const st = item.thesisStatus || 'NO_CHANGE';
-    if (st === 'STRENGTHENING') {
-      statusPill = `<span class="status-pill strengthening"><span class="status-dot strengthening"></span> Thesis strengthening</span>`;
-    } else if (st === 'NEEDS_ATTENTION') {
-      statusPill = `<span class="status-pill attention"><span class="status-dot attention"></span> Thesis needs attention</span>`;
+    const st = item.thesisStatus || 'NO_MEANINGFUL_CHANGE';
+    if (st === 'THESIS_NEEDS_ATTENTION' || st === 'NEEDS_ATTENTION') {
+      statusPill = `<span class="status-pill attention"><span class="status-dot attention"></span> 🟠 Thesis needs attention</span>`;
+    } else if (st === 'THESIS_STRENGTHENING' || st === 'STRENGTHENING') {
+      statusPill = `<span class="status-pill strengthening"><span class="status-dot strengthening"></span> 🟢 Meaningful change / thesis strengthening</span>`;
+    } else if (st === 'MEANINGFUL_CHANGE' || item.hasMeaningfulChange) {
+      statusPill = `<span class="status-pill meaningful"><span class="status-dot meaningful"></span> 🔵 Meaningful change</span>`;
     } else {
-      statusPill = `<span class="status-pill nochange"><span class="status-dot nochange"></span> No meaningful change</span>`;
+      statusPill = `<span class="status-pill nochange"><span class="status-dot nochange"></span> ⚪ No meaningful change</span>`;
     }
 
     const cleanSymbol = item.symbol.replace('.NS', '').replace('.BO', '');
@@ -158,8 +160,47 @@ class WatchlistView {
       <div class="stock-price-col">
         <div class="stock-price price-val">${priceFormatted}</div>
         <div class="stock-change ${changeClass} change-val">${changeFormatted}</div>
+        <button class="btn-remove-stock" type="button" title="Remove ${cleanSymbol} from watchlist" aria-label="Remove ${cleanSymbol} from watchlist">
+          Remove
+        </button>
       </div>
     `;
+
+    // Handle stock deletion cleanly without page reload
+    const removeBtn = card.querySelector('.btn-remove-stock');
+    if (removeBtn) {
+      removeBtn.addEventListener('click', async (e) => {
+        e.stopPropagation(); // Do not trigger card navigation
+        const confirmed = window.confirm(`Remove ${item.companyName} (${cleanSymbol}) from your watchlist?`);
+        if (!confirmed) return;
+
+        removeBtn.disabled = true;
+        removeBtn.textContent = 'Removing...';
+
+        try {
+          const activeWl = window.appState.currentWatchlist;
+          const wlId = activeWl ? activeWl.id : 'default';
+          await window.api.deleteStockFromWatchlist(wlId, item.symbol);
+
+          // Smoothly animate and remove card from DOM
+          card.style.transition = 'all 0.25s ease-out';
+          card.style.opacity = '0';
+          card.style.transform = 'scale(0.96)';
+          setTimeout(() => {
+            card.remove();
+            this.rawItems = this.rawItems.filter(i => i.symbol !== item.symbol);
+            if (this.rawItems.length === 0) {
+              this.renderEmptyState();
+            }
+          }, 250);
+        } catch (err) {
+          console.error('Failed to remove stock:', err);
+          alert(`Could not remove stock: ${err.message || 'Server error'}`);
+          removeBtn.disabled = false;
+          removeBtn.textContent = 'Remove';
+        }
+      });
+    }
 
     card.addEventListener('click', () => {
       window.appState.setView('company', { symbol: item.symbol });

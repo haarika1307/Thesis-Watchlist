@@ -1,5 +1,5 @@
 /**
- * Smart Watchlist — Add Stock Modal Component
+ * Thesis Watchlist — Add Stock Modal Component
  */
 
 class AddStockModal {
@@ -120,14 +120,14 @@ class AddStockModal {
       const cleanSym = stock.symbol.replace('.NS', '').replace('.BO', '');
 
       item.innerHTML = `
-        <div>
+        <div class="search-item-info">
           <div class="search-item-name">${this.escapeHtml(stock.name)}</div>
           <div class="search-item-meta">
-            <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">${cleanSym}</span>
+            <span class="search-item-symbol">${cleanSym}</span>
             <span class="badge-freshness">${stock.exchange || 'NSE'}</span>
           </div>
         </div>
-        <div style="font-size: 1.1rem; color: var(--brand-primary);">+</div>
+        <div class="search-item-action">+</div>
       `;
 
       item.addEventListener('click', () => {

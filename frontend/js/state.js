@@ -1,5 +1,5 @@
 /**
- * Smart Watchlist — Central Application State
+ * Thesis Watchlist — Central Application State
  */
 
 class AppState {

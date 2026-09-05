@@ -1,5 +1,5 @@
 /**
- * Smart Watchlist — Lightweight Financial Canvas Chart
+ * Thesis Watchlist — Lightweight Financial Canvas Chart
  */
 
 class FinancialChart {

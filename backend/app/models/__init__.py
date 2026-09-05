@@ -9,6 +9,7 @@ from backend.app.models.news_article import NewsArticle
 from backend.app.models.news_relevance import NewsRelevance
 from backend.app.models.evidence import Evidence
 from backend.app.models.evaluation import Evaluation, WatchlistEvaluation
+from backend.app.models.check_session import CheckSession
 
 __all__ = [
     "User",
@@ -23,4 +24,6 @@ __all__ = [
     "Evidence",
     "Evaluation",
     "WatchlistEvaluation",
+    "CheckSession",
 ]
+

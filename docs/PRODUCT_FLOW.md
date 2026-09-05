@@ -1,13 +1,13 @@
-# Product Flow — Smart Watchlist
+# Product Flow — Thesis Watchlist
 
 ## User Journey Overview
 
-Smart Watchlist strictly structures user interaction to prioritize investment context over raw numbers.
+Thesis Watchlist strictly structures user interaction to prioritize investment context over raw numbers.
 
 ```
 +--------------------------------------------------------------------------------+
 | STEP 1: OPEN APPLICATION                                                       |
-| Screen: SMART WATCHLIST (Landing Summary)                                      |
+| Screen: THESIS WATCHLIST (Landing Summary)                                     |
 | Content: Last Checked Date/Time, 3 Summary Counters, Glowing 'GO GROW' button |
 | RULE: NO INDIVIDUAL STOCKS DISPLAYED ON THIS FIRST SCREEN                      |
 +---------------------------------------+----------------------------------------+
@@ -64,7 +64,7 @@ Smart Watchlist strictly structures user interaction to prioritize investment co
 ## Screen-by-Screen Breakdown
 
 ### 1. Landing Summary (Screen 1)
-- **Header**: `SMART WATCHLIST`
+- **Header**: `THESIS WATCHLIST`
 - **Subheader**: `Your watchlist, with context.`
 - **Context**: `LAST CHECKED: [timestamp]`
 - **Three Metric Boxes**:

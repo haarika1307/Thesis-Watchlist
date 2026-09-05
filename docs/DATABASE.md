@@ -1,8 +1,8 @@
-# Database Schema & Models — Smart Watchlist
+# Database Schema & Models — Thesis Watchlist
 
 ## Database Overview
 
-Smart Watchlist utilizes SQLAlchemy ORM with support for PostgreSQL in production/containerized environments and SQLite for immediate local execution. Schema versions are managed through Alembic migrations.
+Thesis Watchlist utilizes SQLAlchemy ORM with support for PostgreSQL in production/containerized environments and SQLite for immediate local execution. Schema versions are managed through Alembic migrations.
 
 ---
 

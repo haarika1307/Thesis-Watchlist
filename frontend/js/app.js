@@ -1,5 +1,5 @@
 /**
- * Smart Watchlist — Main Application Orchestrator
+ * Thesis Watchlist — Main Application Orchestrator
  */
 
 document.addEventListener('DOMContentLoaded', () => {

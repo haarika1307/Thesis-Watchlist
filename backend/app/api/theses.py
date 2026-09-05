@@ -155,3 +155,13 @@ def run_thesis_evaluation(
 ):
     """Run an on-demand re-evaluation of thesis."""
     return get_what_changed(symbol, db, current_user)
+
+@router.post("/{symbol}/check", response_model=WhatChangedResponse)
+def check_stock(
+    symbol: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Record user check session and compute two-layer changes against previous check."""
+    return get_what_changed(symbol, db, current_user)
+

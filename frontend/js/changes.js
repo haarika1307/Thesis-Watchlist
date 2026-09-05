@@ -1,5 +1,5 @@
 /**
- * Smart Watchlist — What Changed Page Component (Core Product Feature)
+ * Thesis Watchlist — What Changed Page Component (Core Product Feature)
  */
 
 class ChangesView {
@@ -8,6 +8,8 @@ class ChangesView {
     this.thesisTextEl = document.getElementById('changes-thesis-text');
     this.backToCompanyBtn = document.getElementById('btn-changes-back');
     this.btnRunReevaluation = document.getElementById('btn-re-evaluate');
+    this.lastCheckedNoteEl = document.getElementById('changes-view-last-checked-note');
+    this.objectiveCategoriesContainer = document.getElementById('objective-changes-categories-container');
 
     this.supportingContainer = document.getElementById('evidence-supporting-list');
     this.contradictingContainer = document.getElementById('evidence-contradicting-list');
@@ -55,6 +57,7 @@ class ChangesView {
   async loadWhatChanged(symbol) {
     this.activeSymbol = symbol;
 
+    if (this.objectiveCategoriesContainer) this.objectiveCategoriesContainer.innerHTML = '<div class="spinner"></div>';
     if (this.supportingContainer) this.supportingContainer.innerHTML = '<div class="spinner"></div>';
     if (this.contradictingContainer) this.contradictingContainer.innerHTML = '<div class="spinner"></div>';
     if (this.neutralContainer) this.neutralContainer.innerHTML = '<div class="spinner"></div>';
@@ -64,17 +67,69 @@ class ChangesView {
       this.render(data);
     } catch (err) {
       console.error('Failed to load What Changed analysis:', err);
-      if (this.supportingContainer) this.supportingContainer.innerHTML = `<div style="color: #ef4444;">${err.message || 'Error running evaluation.'}</div>`;
+      if (this.objectiveCategoriesContainer) this.objectiveCategoriesContainer.innerHTML = `<div style="color: #ef4444;">${err.message || 'Error running evaluation.'}</div>`;
     }
   }
 
   render(data) {
-    // 1. User Thesis Text
+    // 0. Last Checked Timestamp note
+    if (this.lastCheckedNoteEl && data.lastCheckedAt) {
+      const dt = new Date(data.lastCheckedAt);
+      this.lastCheckedNoteEl.textContent = `Comparing current state against your last check on ${dt.toLocaleDateString()} at ${dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`;
+    }
+
+    // 1. PART 1: OBJECTIVE MEANINGFUL CHANGES BY CATEGORY (MARKET, FUNDAMENTALS, COMPANY, NEWS)
+    const objChanges = data.objectiveChanges || [];
+    if (this.objectiveCategoriesContainer) {
+      if (objChanges.length === 0) {
+        this.objectiveCategoriesContainer.innerHTML = `
+          <div style="background: var(--bg-card); border: 1px dashed var(--border-subtle); border-radius: var(--radius-md); padding: 2rem; text-align: center; color: var(--text-muted);">
+            ⚪ No objectively meaningful changes detected across Market, Fundamentals, Company events, or News since your last check.
+          </div>
+        `;
+      } else {
+        const categories = ['MARKET', 'FUNDAMENTALS', 'COMPANY', 'NEWS'];
+        const grouped = {};
+        categories.forEach(c => grouped[c] = []);
+
+        objChanges.forEach(ch => {
+          const cat = (ch.category || 'MARKET').toUpperCase();
+          if (!grouped[cat]) grouped[cat] = [];
+          grouped[cat].push(ch);
+        });
+
+        let catHtml = '';
+        categories.forEach(cat => {
+          const items = grouped[cat];
+          if (items.length === 0) return;
+
+          catHtml += `
+            <div class="objective-category-box">
+              <div class="objective-category-title-bar">
+                <span class="objective-category-header-text">${cat}</span>
+                <span class="badge-freshness">${items.length} shift${items.length !== 1 ? 's' : ''} detected</span>
+              </div>
+              <div class="normal-changes-grid">
+                ${items.map(ch => this.renderObjectiveChangeCard(ch)).join('')}
+              </div>
+            </div>
+          `;
+        });
+
+        this.objectiveCategoriesContainer.innerHTML = catHtml || `
+          <div style="background: var(--bg-card); border: 1px dashed var(--border-subtle); border-radius: var(--radius-md); padding: 1.5rem; text-align: center; color: var(--text-muted);">
+            No categorized changes found.
+          </div>
+        `;
+      }
+    }
+
+    // 2. User Thesis Text
     if (this.thesisTextEl) {
       this.thesisTextEl.textContent = `"${data.thesisText}"`;
     }
 
-    // 2. Supporting Evidence
+    // 3. Supporting Evidence
     const sup = data.supportingEvidence || [];
     if (this.supportingContainer) {
       if (sup.length > 0) {
@@ -88,7 +143,7 @@ class ChangesView {
       }
     }
 
-    // 3. Working Against / Contradicting Evidence
+    // 4. Working Against / Contradicting Evidence
     const con = data.contradictingEvidence || [];
     if (this.contradictingContainer) {
       if (con.length > 0) {
@@ -102,7 +157,7 @@ class ChangesView {
       }
     }
 
-    // 4. Neutral / Other Relevant
+    // 5. Neutral / Not Thesis-Relevant
     const neu = data.neutralEvidence || [];
     if (this.neutralContainer) {
       if (neu.length > 0) {
@@ -116,17 +171,20 @@ class ChangesView {
       }
     }
 
-    // 5. Overall Synthesis & Explainability
-    const st = data.status || 'NO_CHANGE';
+    // 6. Overall Synthesis & Explainability
+    const st = data.status || 'NO_MEANINGFUL_CHANGE';
     let statusClass = 'nochange';
     let statusTitle = '⚪ NO MEANINGFUL CHANGE';
 
-    if (st === 'STRENGTHENING') {
+    if (st === 'THESIS_STRENGTHENING' || st === 'STRENGTHENING') {
       statusClass = 'strengthening';
-      statusTitle = '🟢 THESIS STRENGTHENING';
-    } else if (st === 'NEEDS_ATTENTION') {
+      statusTitle = '🟢 MEANINGFUL CHANGE / THESIS STRENGTHENING';
+    } else if (st === 'THESIS_NEEDS_ATTENTION' || st === 'NEEDS_ATTENTION') {
       statusClass = 'attention';
-      statusTitle = '🟠 NEEDS ATTENTION';
+      statusTitle = '🟠 THESIS NEEDS ATTENTION';
+    } else if (st === 'MEANINGFUL_CHANGE' || data.hasMeaningfulChange) {
+      statusClass = 'meaningful';
+      statusTitle = '🔵 MEANINGFUL CHANGE';
     }
 
     if (this.statusBadgeEl) {
@@ -135,12 +193,35 @@ class ChangesView {
     }
 
     if (this.countsLineEl) {
-      this.countsLineEl.textContent = `${data.supportingCount} signal${data.supportingCount !== 1 ? 's' : ''} support your thesis • ${data.contradictingCount} signal${data.contradictingCount !== 1 ? 's' : ''} work against it`;
+      this.countsLineEl.textContent = `${data.meaningfulChangeCount || objChanges.length} meaningful changes detected • ${data.supportingCount} support thesis • ${data.contradictingCount} work against it`;
     }
 
     if (this.explanationEl) {
       this.explanationEl.textContent = data.summary;
     }
+  }
+
+  renderObjectiveChangeCard(ch) {
+    const mag = ch.magnitude || (ch.changePercentage !== null && ch.changePercentage !== undefined ? `${ch.changePercentage > 0 ? '↑ ' : '↓ '}${Math.abs(ch.changePercentage)}%` : 'Shift detected');
+    let magClass = 'neutral';
+    if (mag.includes('↑') || (ch.changePercentage && ch.changePercentage > 0)) magClass = 'up';
+    else if (mag.includes('↓') || (ch.changePercentage && ch.changePercentage < 0)) magClass = 'down';
+
+    const baselineText = ch.previousValue ? `Previous: ${ch.previousValue} → Current: ${ch.currentValue}` : `Current: ${ch.currentValue}`;
+
+    return `
+      <div class="normal-change-card">
+        <div class="normal-change-top">
+          <span class="normal-change-name">${this.escapeHtml(ch.signalName)}</span>
+          <span class="badge-freshness">${this.escapeHtml(ch.sourceType || 'METRIC')}</span>
+        </div>
+        <div class="normal-change-metric-row">
+          <span class="normal-change-magnitude ${magClass}">${this.escapeHtml(mag)}</span>
+        </div>
+        <div class="normal-change-baseline">${this.escapeHtml(baselineText)}</div>
+        <div class="normal-change-reason"><strong>Why meaningful:</strong> ${this.escapeHtml(ch.significanceReason || 'Material threshold exceeded since last check.')}</div>
+      </div>
+    `;
   }
 
   renderEvidenceCard(ev, type) {
@@ -149,37 +230,88 @@ class ChangesView {
 
     const verdictBadge = isSup
       ? '<span class="evidence-verdict-badge supporting">✓ Supports your thesis</span>'
-      : (isCon ? '<span class="evidence-verdict-badge contradicting">⚠ Works against your thesis</span>' : '<span class="evidence-verdict-badge" style="color: var(--text-muted);">ℹ Contextual / Neutral</span>');
+      : (isCon 
+          ? '<span class="evidence-verdict-badge contradicting">⚠ Works against your thesis</span>' 
+          : '<span class="evidence-verdict-badge neutral">ℹ Contextual / Neutral</span>');
 
-    const prevDisplay = ev.previousValue ? `<span class="evidence-val-prev">${this.escapeHtml(ev.previousValue)}</span>` : '';
     const arrow = isSup ? '↑' : (isCon ? '↓' : '→');
+    const accentColor = isSup 
+      ? 'var(--color-strengthening)' 
+      : (isCon ? 'var(--color-attention)' : 'var(--text-muted)');
 
-    const formattedTime = ev.timestamp ? new Date(ev.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'Recent observation';
+    // Format primary stat cleanly (e.g. 8%, 5.2%, 2.1%, or valuation multiple)
+    let displayStat = '';
+    const isHeadline = ev.sourceType === 'NEWS' || (ev.currentValue && ev.currentValue.length > 30);
+
+    if (ev.changePercentage !== null && ev.changePercentage !== undefined && ev.changePercentage !== 0) {
+      displayStat = `${Math.abs(ev.changePercentage).toFixed(1)}%`;
+    } else if (ev.changeValue && (ev.changeValue.includes('%') || ev.changeValue.startsWith('+') || ev.changeValue.startsWith('-'))) {
+      displayStat = ev.changeValue.replace('+', '').replace('-', '').trim();
+    } else if (ev.currentValue && (ev.currentValue.includes('x') || ev.currentValue.includes('%'))) {
+      displayStat = ev.currentValue;
+    }
+
+    const formattedTime = ev.timestamp 
+      ? new Date(ev.timestamp).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) 
+      : 'Recent observation';
+
+    let heroHtml = '';
+    if (displayStat && !isHeadline) {
+      heroHtml = `
+        <div class="evidence-metric-hero">
+          <span class="evidence-hero-arrow" style="color: ${accentColor};">${arrow}</span>
+          <span class="evidence-hero-value" style="color: ${accentColor};">${this.escapeHtml(displayStat)}</span>
+          ${ev.previousValue ? `<span class="evidence-hero-baseline">from ${this.escapeHtml(ev.previousValue)}</span>` : ''}
+        </div>
+      `;
+    } else if (isHeadline) {
+      heroHtml = `
+        <div class="evidence-metric-hero textual">
+          <span class="evidence-hero-arrow" style="color: ${accentColor};">${arrow}</span>
+          <span class="evidence-hero-textual">${this.escapeHtml(ev.currentValue)}</span>
+        </div>
+      `;
+    } else {
+      heroHtml = `
+        <div class="evidence-metric-hero">
+          <span class="evidence-hero-arrow" style="color: ${accentColor};">${arrow}</span>
+          <span class="evidence-hero-value" style="color: ${accentColor};">${this.escapeHtml(ev.currentValue || '')}</span>
+        </div>
+      `;
+    }
+
+    // Source display cleanup
+    let sourceLabel = ev.sourceId || ev.sourceType;
+    if (sourceLabel.startsWith('http')) {
+      try {
+        const u = new URL(sourceLabel);
+        sourceLabel = u.hostname.replace('www.', '');
+      } catch (e) {
+        sourceLabel = 'News Wire';
+      }
+    }
 
     return `
       <div class="evidence-card ${type}">
         <div class="evidence-card-top">
           <span class="evidence-signal-name">${this.escapeHtml(ev.signalName)}</span>
-          <span class="badge-freshness">${this.escapeHtml(ev.sourceType)}</span>
+          <span class="badge-freshness">${this.escapeHtml(ev.sourceType || 'METRIC')}</span>
         </div>
 
-        <div class="evidence-values-comparison">
-          ${prevDisplay}
-          <span style="font-weight: 700; color: ${isSup ? 'var(--color-strengthening)' : (isCon ? 'var(--color-attention)' : 'var(--text-muted)')}; font-size: 1.1rem;">${arrow}</span>
-          <span class="evidence-val-curr">${this.escapeHtml(ev.currentValue || '')}</span>
-          ${ev.changeValue ? `<span style="font-size: 0.85rem; color: var(--text-secondary);">(${this.escapeHtml(ev.changeValue)})</span>` : ''}
-        </div>
+        ${heroHtml}
 
-        <div>
+        <div class="evidence-verdict-row">
           ${verdictBadge}
         </div>
 
-        <div class="evidence-explanation">
-          ${this.escapeHtml(ev.explanation)}
-        </div>
+        ${ev.explanation ? `
+          <div class="evidence-explanation">
+            ${this.escapeHtml(ev.explanation)}
+          </div>
+        ` : ''}
 
         <div class="evidence-footer">
-          <span>Source: ${this.escapeHtml(ev.sourceId || ev.sourceType)}</span>
+          <span title="${this.escapeHtml(ev.sourceId || '')}">Source: ${this.escapeHtml(sourceLabel)}</span>
           <span>${formattedTime}</span>
         </div>
       </div>

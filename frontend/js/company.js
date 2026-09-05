@@ -1,5 +1,5 @@
 /**
- * Smart Watchlist — Company Page Component
+ * Thesis Watchlist — Company Page Component
  */
 
 class CompanyView {
@@ -23,7 +23,10 @@ class CompanyView {
     // Thesis tab elements
     this.thesisTextEl = document.getElementById('thesis-display-text');
     this.thesisCategoryEl = document.getElementById('thesis-display-category');
-    this.signalsContainerEl = document.getElementById('thesis-signals-list');
+    this.normalChangesContainerEl = document.getElementById('thesis-normal-changes-list');
+    this.normalChangesCountBadge = document.getElementById('normal-changes-count-badge');
+    this.normalChangesLastCheckedLabel = document.getElementById('normal-changes-last-checked-label');
+    this.thesisImpactContainerEl = document.getElementById('thesis-impact-list');
     this.signalsChangedNoteEl = document.getElementById('thesis-signals-changed-note');
     this.btnSeeWhatChanged = document.getElementById('btn-see-what-changed');
 
@@ -135,7 +138,7 @@ class CompanyView {
     // Subscribe to symbol for WebSocket quotes
     window.appState.subscribeSymbols([symbol]);
 
-    // 1. Fetch Quote
+    // 1. Fetch Live Quote
     try {
       const quote = await window.api.getQuote(symbol);
       this.renderHeaderQuote(quote);
@@ -144,13 +147,23 @@ class CompanyView {
     }
 
     // 2. Fetch Thesis & Signals
+    let thesisData = null;
     try {
-      const thesis = await window.api.getThesis(symbol);
-      this.renderThesisTab(thesis);
+      thesisData = await window.api.getThesis(symbol);
     } catch (e) {
       console.error('Error loading thesis:', e);
-      this.thesisTextEl.textContent = 'No thesis recorded for this stock.';
-      this.signalsContainerEl.innerHTML = '';
+      if (this.thesisTextEl) this.thesisTextEl.textContent = 'No thesis recorded for this stock.';
+    }
+
+    // 3. Trigger check session & retrieve two-layer change analysis
+    try {
+      const whatChanged = await window.api.checkStock(symbol);
+      this.renderThesisTab(thesisData, whatChanged);
+    } catch (e) {
+      console.error('Error checking stock changes:', e);
+      if (thesisData) {
+        this.renderThesisTab(thesisData, null);
+      }
     }
 
     // Pre-load Overview Stats
@@ -195,60 +208,132 @@ class CompanyView {
     if (this.statMarketStatus) this.statMarketStatus.textContent = quote.marketStatus || 'OPEN';
   }
 
-  renderThesisTab(thesis) {
-    if (this.thesisTextEl) this.thesisTextEl.textContent = `"${thesis.text}"`;
-    if (this.thesisCategoryEl) this.thesisCategoryEl.textContent = thesis.category.toUpperCase();
+  renderThesisTab(thesis, whatChanged) {
+    if (thesis) {
+      if (this.thesisTextEl) this.thesisTextEl.textContent = `"${thesis.text}"`;
+      if (this.thesisCategoryEl) this.thesisCategoryEl.textContent = (thesis.category || 'GROWTH').toUpperCase();
+    }
 
     // Render Status Pill in Header
-    const st = thesis.status || 'NO_CHANGE';
+    const st = (whatChanged && whatChanged.status) ? whatChanged.status : (thesis ? thesis.status : 'NO_MEANINGFUL_CHANGE');
     let statusHtml = '';
-    if (st === 'STRENGTHENING') {
-      statusHtml = `<span class="status-pill strengthening"><span class="status-dot strengthening"></span> THESIS STRENGTHENING</span>`;
-    } else if (st === 'NEEDS_ATTENTION') {
-      statusHtml = `<span class="status-pill attention"><span class="status-dot attention"></span> NEEDS ATTENTION</span>`;
+    if (st === 'THESIS_NEEDS_ATTENTION' || st === 'NEEDS_ATTENTION') {
+      statusHtml = `<span class="status-pill attention"><span class="status-dot attention"></span> 🟠 Thesis needs attention</span>`;
+    } else if (st === 'THESIS_STRENGTHENING' || st === 'STRENGTHENING') {
+      statusHtml = `<span class="status-pill strengthening"><span class="status-dot strengthening"></span> 🟢 Meaningful change / thesis strengthening</span>`;
+    } else if (st === 'MEANINGFUL_CHANGE' || (whatChanged && whatChanged.hasMeaningfulChange)) {
+      statusHtml = `<span class="status-pill meaningful"><span class="status-dot meaningful"></span> 🔵 Meaningful change</span>`;
     } else {
-      statusHtml = `<span class="status-pill nochange"><span class="status-dot nochange"></span> NO MEANINGFUL CHANGE</span>`;
+      statusHtml = `<span class="status-pill nochange"><span class="status-dot nochange"></span> ⚪ No meaningful change</span>`;
     }
     if (this.companyStatusPillEl) this.companyStatusPillEl.innerHTML = statusHtml;
 
-    // Render Signals Evidence Grid
-    if (this.signalsContainerEl) {
-      this.signalsContainerEl.innerHTML = '';
-      const signals = thesis.signals || [];
-      if (signals.length === 0) {
-        this.signalsContainerEl.innerHTML = '<div style="color: var(--text-muted);">No signals configured yet.</div>';
+    // --- SECTION A: WHAT CHANGED SINCE YOU LAST CHECKED (Normal Change Detection Layer) ---
+    const objChanges = (whatChanged && whatChanged.objectiveChanges) ? whatChanged.objectiveChanges : [];
+    if (this.normalChangesCountBadge) {
+      this.normalChangesCountBadge.textContent = `${objChanges.length} Meaningful Change${objChanges.length !== 1 ? 's' : ''}`;
+    }
+
+    if (this.normalChangesLastCheckedLabel && whatChanged && whatChanged.lastCheckedAt) {
+      const dt = new Date(whatChanged.lastCheckedAt);
+      this.normalChangesLastCheckedLabel.textContent = `Comparing current state against your last check on ${dt.toLocaleDateString()} at ${dt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}.`;
+    }
+
+    if (this.normalChangesContainerEl) {
+      this.normalChangesContainerEl.innerHTML = '';
+      if (objChanges.length === 0) {
+        this.normalChangesContainerEl.innerHTML = `
+          <div style="grid-column: 1 / -1; background: var(--bg-secondary); border: 1px dashed var(--border-medium); border-radius: var(--radius-md); padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+            ⚪ No objectively meaningful changes detected across market, fundamental, or news metrics since your last check.
+          </div>
+        `;
       } else {
-        signals.forEach(sig => {
+        objChanges.forEach(ch => {
           const card = document.createElement('div');
-          card.className = 'signal-card';
+          card.className = 'normal-change-card';
 
-          const isPositiveDir = sig.direction === 'POSITIVE';
-          const arrowIcon = isPositiveDir ? '↑' : (sig.direction === 'NEGATIVE' ? '↓' : '→');
-          const arrowClass = isPositiveDir ? 'arrow-up' : (sig.direction === 'NEGATIVE' ? 'arrow-down' : 'arrow-neutral');
+          const mag = ch.magnitude || (ch.changePercentage !== null && ch.changePercentage !== undefined ? `${ch.changePercentage > 0 ? '↑ ' : '↓ '}${Math.abs(ch.changePercentage)}%` : 'Active');
+          let magClass = 'neutral';
+          if (mag.includes('↑') || (ch.changePercentage && ch.changePercentage > 0)) magClass = 'up';
+          else if (mag.includes('↓') || (ch.changePercentage && ch.changePercentage < 0)) magClass = 'down';
 
-          const val = sig.currentValue || (isPositiveDir ? 'Positive momentum' : 'Monitoring');
+          const baselineText = ch.previousValue ? `From ${ch.previousValue} to ${ch.currentValue}` : ch.currentValue;
 
           card.innerHTML = `
-            <div>
-              <div class="signal-header">
-                <span class="signal-topic">${this.escapeHtml(sig.topic)}</span>
-                <span class="badge-freshness">${sig.importance}</span>
-              </div>
-              <div class="signal-name">${this.escapeHtml(sig.signalName)}</div>
+            <div class="normal-change-top">
+              <span class="normal-change-category">${this.escapeHtml(ch.category || 'MARKET')}</span>
+              <span class="badge-freshness">${this.escapeHtml(ch.sourceType || 'OBJECTIVE')}</span>
             </div>
-            <div class="signal-value-row">
-              <span class="signal-direction-arrow ${arrowClass}">${arrowIcon}</span>
-              <span class="signal-value-pill">${this.escapeHtml(val)}</span>
+            <div class="normal-change-name">${this.escapeHtml(ch.signalName)}</div>
+            <div class="normal-change-metric-row">
+              <span class="normal-change-magnitude ${magClass}">${this.escapeHtml(mag)}</span>
+              <span class="normal-change-baseline">${this.escapeHtml(baselineText)}</span>
             </div>
+            <div class="normal-change-reason">${this.escapeHtml(ch.significanceReason || 'Objectively meaningful shift detected.')}</div>
           `;
-          this.signalsContainerEl.appendChild(card);
+          this.normalChangesContainerEl.appendChild(card);
         });
       }
     }
 
-    if (this.signalsChangedNoteEl) {
-      const sigCount = (thesis.signals || []).length;
-      this.signalsChangedNoteEl.textContent = `Since your last check: ${Math.min(sigCount, 3)} relevant signals changed.`;
+    // --- SECTION B: HOW THE CHANGES RELATE TO YOUR THESIS (Thesis Impact Layer) ---
+    if (this.thesisImpactContainerEl) {
+      this.thesisImpactContainerEl.innerHTML = '';
+      const allEvidence = [];
+      if (whatChanged) {
+        (whatChanged.supportingEvidence || []).forEach(e => allEvidence.push({ ...e, verdict: 'SUPPORTING' }));
+        (whatChanged.contradictingEvidence || []).forEach(e => allEvidence.push({ ...e, verdict: 'CONTRADICTING' }));
+        (whatChanged.neutralEvidence || []).forEach(e => allEvidence.push({ ...e, verdict: 'NEUTRAL' }));
+      }
+
+      if (allEvidence.length === 0) {
+        this.thesisImpactContainerEl.innerHTML = `
+          <div style="background: var(--bg-secondary); border: 1px dashed var(--border-medium); border-radius: var(--radius-md); padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+            No thesis-evaluated impacts recorded yet. Click "SEE WHAT CHANGED" for deep diagnosis.
+          </div>
+        `;
+      } else {
+        allEvidence.forEach(item => {
+          const card = document.createElement('div');
+          const v = item.verdict.toLowerCase();
+          card.className = `thesis-impact-card ${v}`;
+
+          let verdictBadge = '';
+          if (item.verdict === 'SUPPORTING') {
+            verdictBadge = `<span class="thesis-impact-verdict-pill supporting">✓ Supports your thesis</span>`;
+          } else if (item.verdict === 'CONTRADICTING') {
+            verdictBadge = `<span class="thesis-impact-verdict-pill contradicting">⚠ Works against your thesis</span>`;
+          } else {
+            verdictBadge = `<span class="thesis-impact-verdict-pill neutral">ℹ Neutral / Not thesis-relevant</span>`;
+          }
+
+          const mag = item.changePercentage !== null && item.changePercentage !== undefined
+            ? `${item.changePercentage > 0 ? '↑ ' : '↓ '}${Math.abs(item.changePercentage)}%`
+            : (item.changeValue || 'Active');
+          
+          let magClass = 'neutral';
+          if (mag.includes('↑')) magClass = 'up';
+          else if (mag.includes('↓')) magClass = 'down';
+
+          card.innerHTML = `
+            <div class="thesis-impact-left">
+              <div class="thesis-impact-title-row">
+                <span class="thesis-impact-metric-name">${this.escapeHtml(item.signalName)}</span>
+                <span class="thesis-impact-magnitude-tag ${magClass}">${this.escapeHtml(mag)}</span>
+              </div>
+              <div class="thesis-impact-reason">${this.escapeHtml(item.explanation || 'Evaluated against your thesis statement.')}</div>
+            </div>
+            <div>
+              ${verdictBadge}
+            </div>
+          `;
+          this.thesisImpactContainerEl.appendChild(card);
+        });
+      }
+    }
+
+    if (this.signalsChangedNoteEl && whatChanged) {
+      this.signalsChangedNoteEl.textContent = `Since your last check: ${whatChanged.meaningfulChangeCount || objChanges.length} meaningful changes detected (${whatChanged.supportingCount || 0} supporting, ${whatChanged.contradictingCount || 0} working against).`;
     }
   }
 

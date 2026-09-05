@@ -44,10 +44,23 @@ class EvidenceClassifier:
         confidence = 0.85
         explanation = ""
 
+        # Check if the metric has direct relevance to user's thesis or signals
+        is_thesis_focused = bool(matched_sig) or any(
+            w in thesis_text.lower() 
+            for w in [target_metric.lower(), change.signal_name.lower().split()[0]]
+        )
+
         # 1. Price movement classification
         if target_metric == "priceChange":
             pct = change.change_percentage or 0.0
-            if pct > 0:
+            # If thesis is NOT about price and doesn't mention price, keep it neutral to thesis
+            is_price_thesis = category.lower() in ["price", "momentum", "technical"] or any(
+                w in thesis_text.lower() for w in ["price", "momentum", "rally", "target", "breakout", "bull"]
+            )
+            if not is_price_thesis and not matched_sig:
+                classification = "NEUTRAL"
+                explanation = f"Price moved {pct:+.2f}%, which is an objective market change, but neutral to your {category.lower()} thesis."
+            elif pct > 0:
                 classification = "SUPPORTING"
                 explanation = f"Price positive momentum (+{pct:.1f}%) aligns with affirmative thesis outlook."
             elif pct < -1.5:

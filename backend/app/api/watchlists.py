@@ -73,6 +73,15 @@ def get_user_watchlists(
             sup_count = len([e for e in th.evidence if e.classification == "SUPPORTING"]) if (th and th.evidence) else 0
             con_count = len([e for e in th.evidence if e.classification == "CONTRADICTING"]) if (th and th.evidence) else 0
 
+            # Check session state
+            from backend.app.services.snapshot.snapshot_service import snapshot_service
+            last_check = snapshot_service.get_last_check_session(db, item.id, item.symbol)
+            has_meaningful = last_check.hasMeaningfulChange if last_check else False
+            meaningful_cnt = last_check.meaningfulChangeCount if last_check else 0
+            last_checked = last_check.checkedAt if last_check else th_evaluated
+            if last_check and last_check.overallStatus:
+                status_val = last_check.overallStatus
+
             items_detail.append(WatchlistItemDetail(
                 id=item.id,
                 symbol=item.symbol,
@@ -83,12 +92,15 @@ def get_user_watchlists(
                 percentageChange=pct,
                 currency=currency,
                 thesisStatus=status_val,
+                hasMeaningfulChange=has_meaningful,
+                meaningfulChangeCount=meaningful_cnt,
                 thesisText=th_text,
                 thesisCategory=th_cat,
                 signalCount=sig_count,
                 supportingCount=sup_count,
                 contradictingCount=con_count,
                 freshness=freshness,
+                lastCheckedAt=last_checked,
                 lastEvaluatedAt=th_evaluated
             ))
 
@@ -161,6 +173,15 @@ def get_watchlist(
         sup_count = len([e for e in th.evidence if e.classification == "SUPPORTING"]) if (th and th.evidence) else 0
         con_count = len([e for e in th.evidence if e.classification == "CONTRADICTING"]) if (th and th.evidence) else 0
 
+        # Check session state
+        from backend.app.services.snapshot.snapshot_service import snapshot_service
+        last_check = snapshot_service.get_last_check_session(db, item.id, item.symbol)
+        has_meaningful = last_check.hasMeaningfulChange if last_check else False
+        meaningful_cnt = last_check.meaningfulChangeCount if last_check else 0
+        last_checked = last_check.checkedAt if last_check else th_evaluated
+        if last_check and last_check.overallStatus:
+            status_val = last_check.overallStatus
+
         items_detail.append(WatchlistItemDetail(
             id=item.id,
             symbol=item.symbol,
@@ -171,12 +192,15 @@ def get_watchlist(
             percentageChange=pct,
             currency=currency,
             thesisStatus=status_val,
+            hasMeaningfulChange=has_meaningful,
+            meaningfulChangeCount=meaningful_cnt,
             thesisText=th_text,
             thesisCategory=th_cat,
             signalCount=sig_count,
             supportingCount=sup_count,
             contradictingCount=con_count,
             freshness=freshness,
+            lastCheckedAt=last_checked,
             lastEvaluatedAt=th_evaluated
         ))
 
@@ -293,12 +317,15 @@ def add_stock_with_thesis(
         percentageChange=pct,
         currency=curr,
         thesisStatus=status_val,
+        hasMeaningfulChange=False,
+        meaningfulChangeCount=0,
         thesisText=thesis.text,
         thesisCategory=thesis.category,
         signalCount=len(profile.signals),
         supportingCount=sup_cnt,
         contradictingCount=con_cnt,
         freshness=freshness,
+        lastCheckedAt=thesis.lastEvaluatedAt,
         lastEvaluatedAt=thesis.lastEvaluatedAt
     )
 
@@ -310,14 +337,49 @@ def delete_stock(
     current_user: User = Depends(get_current_user)
 ):
     """Remove a stock and its thesis from watchlist."""
+    from urllib.parse import unquote
+    clean_symbol = unquote(symbol).strip()
+
+    # Find item in user's watchlist
     item = db.query(WatchlistItem).join(Watchlist).filter(
         Watchlist.id == watchlist_id,
         Watchlist.userId == current_user.id,
-        WatchlistItem.symbol == symbol
+        WatchlistItem.symbol == clean_symbol
     ).first()
-    if not item:
-        raise HTTPException(status_code=404, detail="Stock not found in watchlist")
 
+    if not item:
+        # Check without suffix or case-insensitive
+        sym_base = clean_symbol.replace(".NS", "").replace(".BO", "")
+        item = db.query(WatchlistItem).join(Watchlist).filter(
+            Watchlist.id == watchlist_id,
+            Watchlist.userId == current_user.id,
+            (WatchlistItem.symbol == f"{sym_base}.NS") | 
+            (WatchlistItem.symbol == f"{sym_base}.BO") | 
+            (WatchlistItem.symbol == sym_base) |
+            WatchlistItem.symbol.ilike(f"%{sym_base}%")
+        ).first()
+
+    if not item:
+        raise HTTPException(status_code=404, detail=f"Stock {clean_symbol} not found in watchlist")
+
+    # Clean up associated thesis and signals
+    theses = db.query(Thesis).filter(Thesis.watchlistItemId == item.id).all()
+    for th in theses:
+        db.delete(th)
+
+    deleted_sym = item.symbol
+    company_name = item.companyName
     db.delete(item)
     db.commit()
-    return {"message": f"Successfully removed {symbol} from watchlist."}
+
+    # Re-evaluate watchlist so overall summary counts stay updated
+    try:
+        thesis_evaluator.evaluate_watchlist(db, watchlist_id)
+    except Exception as e:
+        logger.warning(f"Error updating watchlist evaluation after deletion: {e}")
+
+    return {
+        "message": f"Successfully removed {company_name} ({deleted_sym}) from watchlist.",
+        "symbol": deleted_sym
+    }
+

@@ -32,13 +32,16 @@ class WatchlistItemDetail(BaseModel):
     change: Optional[float] = None
     percentageChange: Optional[float] = None
     currency: str = "INR"
-    thesisStatus: str = "NO_CHANGE"  # STRENGTHENING, NEEDS_ATTENTION, NO_CHANGE
+    thesisStatus: str = "NO_CHANGE"  # NO_MEANINGFUL_CHANGE, MEANINGFUL_CHANGE, THESIS_STRENGTHENING, THESIS_NEEDS_ATTENTION
+    hasMeaningfulChange: bool = False
+    meaningfulChangeCount: int = 0
     thesisText: Optional[str] = None
     thesisCategory: Optional[str] = None
     signalCount: int = 0
     supportingCount: int = 0
     contradictingCount: int = 0
     freshness: str = "LIVE"
+    lastCheckedAt: Optional[datetime] = None
     lastEvaluatedAt: Optional[datetime] = None
 
 class WatchlistCreate(BaseModel):

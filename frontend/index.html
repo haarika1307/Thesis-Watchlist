@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Smart Watchlist — Thesis-First Stock Intelligence</title>
+  <title>Thesis Watchlist — Thesis-First Stock Intelligence</title>
   <meta name="description" content="A thesis-first stock intelligence platform that tracks why you are watching a stock, monitors real-world fundamental and price changes, and classifies supporting versus contradicting evidence.">
 
   <!-- Stylesheets -->
@@ -18,9 +18,9 @@
     <!-- Top Navigation Bar -->
     <header class="navbar">
       <a href="#/home" class="nav-brand" id="nav-brand-link">
-        <div class="brand-icon">S</div>
+        <div class="brand-icon">T</div>
         <div>
-          <span class="brand-title">Smart Watchlist</span>
+          <span class="brand-title">Thesis Watchlist</span>
           <span class="brand-tagline">Thesis-First Stock Intelligence</span>
         </div>
       </a>
@@ -43,7 +43,7 @@
       <section id="home-view" class="view">
         <div class="landing-wrapper">
           <div class="landing-card">
-            <h1 class="landing-title">SMART WATCHLIST</h1>
+            <h1 class="landing-title">THESIS WATCHLIST</h1>
             <p class="landing-subtitle">Your watchlist, with context.</p>
 
             <div class="landing-last-checked" id="home-last-checked">
@@ -92,7 +92,7 @@
             </button>
 
             <button class="btn btn-primary" id="btn-open-add-stock">
-              + ADD
+              + Add Stock
             </button>
           </div>
         </div>
@@ -142,34 +142,63 @@
         <!-- Tab 1: THESIS (Default Selected) -->
         <div class="company-tab-panel" data-panel="thesis">
           <div class="thesis-tab-layout">
-            <div class="thesis-banner">
-              <div class="thesis-section-label">YOUR INVESTMENT THESIS • <span id="thesis-display-category">GROWTH</span></div>
-              <div class="thesis-quote-text" id="thesis-display-text">"Loading thesis..."</div>
-              <div class="thesis-status-row">
-                <div style="font-size: 0.85rem; color: var(--text-secondary);">
-                  Monitored real-world metrics and evidence are evaluated against this specific premise.
-                </div>
-              </div>
-            </div>
 
-            <div>
-              <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem;">CURRENT EVIDENCE</h3>
-              <div class="signals-evidence-grid" id="thesis-signals-list">
+            <!-- SECTION A: WHAT CHANGED SINCE YOU LAST CHECKED (Normal Change Detection Layer) -->
+            <div class="two-layer-card-section" style="margin-bottom: 2rem;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.85rem; flex-wrap: wrap; gap: 0.5rem;">
+                <div>
+                  <h3 style="font-size: 1.15rem; font-weight: 800; letter-spacing: -0.01em; margin-bottom: 0.2rem;">
+                    WHAT CHANGED SINCE YOU LAST CHECKED
+                  </h3>
+                  <div style="font-size: 0.85rem; color: var(--text-secondary);" id="normal-changes-last-checked-label">
+                    Objectively meaningful shifts detected against your previous check.
+                  </div>
+                </div>
+                <span class="badge-freshness" id="normal-changes-count-badge">0 Changes Detected</span>
+              </div>
+
+              <div class="normal-changes-grid" id="thesis-normal-changes-list">
                 <!-- Injected dynamically -->
               </div>
             </div>
 
-            <div class="see-changes-banner">
-              <div>
-                <div class="see-changes-text" id="thesis-signals-changed-note">Since your last check: 3 relevant signals changed.</div>
-                <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.2rem;">
-                  Inspect supporting vs contradicting data points and diagnostic reasoning.
+            <!-- SECTION B: YOUR THESIS & HOW THE CHANGES RELATE TO YOUR THESIS (Thesis Intelligence Layer) -->
+            <div class="two-layer-card-section">
+              <div class="thesis-banner" style="margin-bottom: 1.5rem;">
+                <div class="thesis-section-label">YOUR INVESTMENT THESIS • <span id="thesis-display-category">GROWTH</span></div>
+                <div class="thesis-quote-text" id="thesis-display-text">"Loading thesis..."</div>
+                <div class="thesis-status-row">
+                  <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                    Monitored real-world metrics and evidence are evaluated against this specific premise.
+                  </div>
                 </div>
               </div>
-              <button class="btn btn-primary" id="btn-see-what-changed">
-                SEE WHAT CHANGED →
-              </button>
+
+              <div>
+                <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 0.35rem;">
+                  HOW THE CHANGES RELATE TO YOUR THESIS
+                </h3>
+                <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                  Meaningful change does not automatically mean thesis change. Each detected change is interpreted against your investment reason.
+                </div>
+                <div class="thesis-impact-grid" id="thesis-impact-list">
+                  <!-- Injected dynamically: Supports / Works against / Neutral -->
+                </div>
+              </div>
+
+              <div class="see-changes-banner" style="margin-top: 2rem;">
+                <div>
+                  <div class="see-changes-text" id="thesis-signals-changed-note">Detailed Change Analysis Available</div>
+                  <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.2rem;">
+                    Inspect the full breakdown of market, fundamental, company, and news developments.
+                  </div>
+                </div>
+                <button class="btn btn-primary" id="btn-see-what-changed">
+                  SEE WHAT CHANGED →
+                </button>
+              </div>
             </div>
+
           </div>
         </div>
 
@@ -315,46 +344,79 @@
 
         <div class="changes-header-block">
           <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
-            <h2 class="page-title">WHAT CHANGED?</h2>
+            <div>
+              <h2 class="page-title">WHAT CHANGED?</h2>
+              <div style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.25rem;" id="changes-view-last-checked-note">
+                Comparing current state against your last check session.
+              </div>
+            </div>
             <button class="btn btn-secondary" id="btn-re-evaluate">
               🔄 Re-evaluate Live Signals
             </button>
           </div>
+        </div>
 
-          <div class="thesis-banner" style="margin-top: 1rem;">
-            <div class="thesis-section-label">YOUR INVESTMENT THESIS</div>
-            <div class="thesis-quote-text" id="changes-thesis-text">"Loading thesis..."</div>
+        <!-- PART 1: SINCE YOUR LAST CHECK (Objective Meaningful Changes by Category) -->
+        <div class="changes-section-container" style="margin-bottom: 3rem;">
+          <div class="changes-section-header">
+            <h3 style="font-size: 1.35rem; font-weight: 800; letter-spacing: -0.01em;">
+              SINCE YOUR LAST CHECK
+            </h3>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); margin-top: 0.25rem;">
+              Objectively detected meaningful changes across market, fundamental, company event, and news developments.
+            </p>
+          </div>
+
+          <div class="objective-categories-grid" id="objective-changes-categories-container">
+            <!-- Populated dynamically with category blocks: MARKET, FUNDAMENTALS, COMPANY, NEWS -->
           </div>
         </div>
 
-        <div class="evidence-columns-wrapper">
-          <!-- SUPPORTING YOUR THESIS -->
-          <div class="evidence-category-section">
-            <h3 class="evidence-category-title supporting">
-              <span>✓</span> SUPPORTING YOUR THESIS
-            </h3>
-            <div class="evidence-cards-list" id="evidence-supporting-list">
-              <!-- Populated dynamically -->
+        <!-- PART 2: YOUR THESIS & THESIS IMPACT -->
+        <div class="changes-section-container" style="margin-bottom: 2.5rem;">
+          <div class="thesis-banner" style="margin-bottom: 1.5rem;">
+            <div class="thesis-section-label">YOUR INVESTMENT THESIS</div>
+            <div class="thesis-quote-text" id="changes-thesis-text">"Loading thesis..."</div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.4rem;">
+              The system interprets how the objectively detected changes support, weaken, or relate neutrally to this thesis.
             </div>
           </div>
 
-          <!-- WORKING AGAINST YOUR THESIS -->
-          <div class="evidence-category-section">
-            <h3 class="evidence-category-title contradicting">
-              <span>⚠</span> WORKING AGAINST YOUR THESIS
+          <div class="changes-section-header" style="margin-bottom: 1.25rem;">
+            <h3 style="font-size: 1.2rem; font-weight: 800; text-transform: uppercase;">
+              THESIS IMPACT
             </h3>
-            <div class="evidence-cards-list" id="evidence-contradicting-list">
-              <!-- Populated dynamically -->
-            </div>
           </div>
 
-          <!-- NEUTRAL / OTHER RELEVANT CHANGES -->
-          <div class="evidence-category-section">
-            <h3 class="evidence-category-title neutral">
-              <span>ℹ</span> NEUTRAL / OTHER RELEVANT CHANGES
-            </h3>
-            <div class="evidence-cards-list" id="evidence-neutral-list">
-              <!-- Populated dynamically -->
+          <div class="evidence-columns-wrapper">
+            <!-- SUPPORTING YOUR THESIS -->
+            <div class="evidence-category-section supporting-section">
+              <h3 class="evidence-category-title supporting">
+                <span>✓</span> SUPPORTING YOUR THESIS
+              </h3>
+              <div class="evidence-cards-list" id="evidence-supporting-list">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+
+            <!-- WORKING AGAINST YOUR THESIS -->
+            <div class="evidence-category-section contradicting-section">
+              <h3 class="evidence-category-title contradicting">
+                <span>⚠</span> WORKING AGAINST YOUR THESIS
+              </h3>
+              <div class="evidence-cards-list" id="evidence-contradicting-list">
+                <!-- Populated dynamically -->
+              </div>
+            </div>
+
+            <!-- NEUTRAL / NOT THESIS-RELEVANT -->
+            <div class="evidence-category-section">
+              <h3 class="evidence-category-title neutral">
+                <span>ℹ</span> NEUTRAL / NOT THESIS-RELEVANT
+              </h3>
+              <div class="evidence-cards-list" id="evidence-neutral-list">
+                <!-- Populated dynamically -->
+              </div>
             </div>
           </div>
         </div>

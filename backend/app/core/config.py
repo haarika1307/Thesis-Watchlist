@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     # App
-    APP_NAME: str = "Smart Watchlist"
+    APP_NAME: str = "Thesis Watchlist"
     APP_VERSION: str = "1.0.0"
     HOST: str = "0.0.0.0"
     PORT: int = 8000

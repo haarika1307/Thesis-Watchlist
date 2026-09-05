@@ -152,7 +152,7 @@ def run_seed_evaluations_background():
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup
-    logger.info("Starting Smart Watchlist application...")
+    logger.info("Starting Thesis Watchlist application...")
     init_db()
     seed_initial_data()
     # Run seed evaluations in background thread so server starts instantly
@@ -169,7 +169,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title=settings.APP_NAME,
     version=settings.APP_VERSION,
-    description="Smart Watchlist — A Thesis-First Stock Intelligence Platform",
+    description="Thesis Watchlist — A Thesis-First Stock Intelligence Platform",
     lifespan=lifespan
 )
 
@@ -202,7 +202,7 @@ def serve_index():
     index_file = frontend_path / "index.html"
     if index_file.exists():
         return FileResponse(str(index_file))
-    return JSONResponse({"message": "Smart Watchlist API is running. Frontend not found."})
+    return JSONResponse({"message": "Thesis Watchlist API is running. Frontend not found."})
 
 @app.get("/{full_path:path}")
 def serve_spa_routes(full_path: str):

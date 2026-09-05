@@ -1,2 +1,2 @@
-"""Smart Watchlist Application Backend"""
+"""Thesis Watchlist Application Backend"""
 __version__ = "1.0.0"

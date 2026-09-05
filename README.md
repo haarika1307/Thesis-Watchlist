@@ -1,6 +1,8 @@
-# Smart Watchlist — Thesis-First Stock Intelligence Platform
+# Thesis Watchlist — Thesis-First Stock Intelligence Platform
 
-Smart Watchlist is a full-stack, thesis-first investment intelligence platform that tracks **why** you are watching a stock, monitors real-world fundamental and price changes, and classifies supporting versus contradicting evidence.
+> Your watchlist, with context.
+
+Thesis Watchlist is a full-stack, thesis-first investment intelligence platform that tracks **why** you are watching a stock, monitors real-world fundamental and price changes, and classifies supporting versus contradicting evidence.
 
 ---
 
@@ -8,7 +10,7 @@ Smart Watchlist is a full-stack, thesis-first investment intelligence platform t
 
 Traditional watchlists tell users: *"What stocks am I watching?"*
 
-Smart Watchlist answers:
+Thesis Watchlist answers:
 **"Why am I watching this stock, what has changed since I last checked, and does that change support or contradict the reason I was watching it?"**
 
 ```

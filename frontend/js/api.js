@@ -1,5 +1,5 @@
 /**
- * Smart Watchlist — API Client
+ * Thesis Watchlist — API Client
  */
 
 const API_BASE = '/api';
@@ -142,6 +142,12 @@ class ApiClient {
 
   evaluateThesis(symbol) {
     return this.request(`/thesis/${encodeURIComponent(symbol)}/evaluate`, {
+      method: 'POST'
+    });
+  }
+
+  checkStock(symbol) {
+    return this.request(`/thesis/${encodeURIComponent(symbol)}/check`, {
       method: 'POST'
     });
   }

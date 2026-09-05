@@ -94,4 +94,79 @@ class SnapshotService:
         previous = snapshots[1] if len(snapshots) > 1 else None
         return current, previous
 
+    def get_last_check_session(
+        self,
+        db: Session,
+        watchlistItemId: str,
+        symbol: str
+    ):
+        """Retrieve the latest persisted check session for a stock."""
+        from backend.app.models.check_session import CheckSession
+        return db.query(CheckSession)\
+            .filter(CheckSession.watchlistItemId == watchlistItemId, CheckSession.symbol == symbol)\
+            .order_by(desc(CheckSession.checkedAt))\
+            .first()
+
+    def record_check_session(
+        self,
+        db: Session,
+        watchlistItemId: str,
+        symbol: str,
+        price: Optional[float] = None,
+        change: Optional[float] = None,
+        percentageChange: Optional[float] = None,
+        volume: Optional[int] = None,
+        volatility: Optional[float] = None,
+        pe: Optional[float] = None,
+        pb: Optional[float] = None,
+        eps: Optional[float] = None,
+        roe: Optional[float] = None,
+        margin: Optional[float] = None,
+        revenue: Optional[float] = None,
+        profit: Optional[float] = None,
+        debt: Optional[float] = None,
+        latestHeadline: Optional[str] = None,
+        newsCount: int = 0,
+        overallStatus: str = "NO_MEANINGFUL_CHANGE",
+        hasMeaningfulChange: bool = False,
+        meaningfulChangeCount: int = 0,
+        supportingCount: int = 0,
+        contradictingCount: int = 0,
+        neutralCount: int = 0
+    ):
+        """Record or update a check session for a watchlist item."""
+        from backend.app.models.check_session import CheckSession
+        now = datetime.now(timezone.utc)
+        
+        session = CheckSession(
+            watchlistItemId=watchlistItemId,
+            symbol=symbol,
+            checkedAt=now,
+            price=price,
+            change=change,
+            percentageChange=percentageChange,
+            volume=volume,
+            volatility=volatility,
+            pe=pe,
+            pb=pb,
+            eps=eps,
+            roe=roe,
+            margin=margin,
+            revenue=revenue,
+            profit=profit,
+            debt=debt,
+            latestHeadline=latestHeadline,
+            newsCount=newsCount,
+            overallStatus=overallStatus,
+            hasMeaningfulChange=1 if hasMeaningfulChange else 0,
+            meaningfulChangeCount=meaningfulChangeCount,
+            supportingCount=supportingCount,
+            contradictingCount=contradictingCount,
+            neutralCount=neutralCount
+        )
+        db.add(session)
+        db.commit()
+        db.refresh(session)
+        return session
+
 snapshot_service = SnapshotService()

@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Watchlist — Thesis-First Stock Intelligence</title>
+  <meta name="description" content="A thesis-first stock intelligence platform that tracks why you are watching a stock, monitors real-world fundamental and price changes, and classifies supporting versus contradicting evidence.">
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="/static/css/main.css">
+  <link rel="stylesheet" href="/static/css/components.css">
+  <link rel="stylesheet" href="/static/css/pages.css">
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📈</text></svg>">
+</head>
+<body>
+  <div id="app">
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+      <a href="#/home" class="nav-brand" id="nav-brand-link">
+        <div class="brand-icon">S</div>
+        <div>
+          <span class="brand-title">Smart Watchlist</span>
+          <span class="brand-tagline">Thesis-First Stock Intelligence</span>
+        </div>
+      </a>
+
+      <div class="nav-actions">
+        <div class="live-indicator">
+          <span class="pulse-dot"></span>
+          <span>MARKET LIVE STREAM</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Application Views -->
+    <main class="main-content">
+
+      <!-- ====================================================================
+           1. LANDING PAGE VIEW (#home-view)
+           RULE: This first screen is summary only. NEVER display stocks here.
+           ==================================================================== -->
+      <section id="home-view" class="view">
+        <div class="landing-wrapper">
+          <div class="landing-card">
+            <h1 class="landing-title">SMART WATCHLIST</h1>
+            <p class="landing-subtitle">Your watchlist, with context.</p>
+
+            <div class="landing-last-checked" id="home-last-checked">
+              LAST CHECKED: LOADING...
+            </div>
+
+            <div class="landing-metrics-grid">
+              <div class="landing-metric-box changed">
+                <div class="landing-metric-count" id="count-thesis-changed">0</div>
+                <div class="landing-metric-label">THESIS CHANGED</div>
+              </div>
+
+              <div class="landing-metric-box attention">
+                <div class="landing-metric-count" id="count-needs-attention">0</div>
+                <div class="landing-metric-label">NEEDS ATTENTION</div>
+              </div>
+
+              <div class="landing-metric-box nochange">
+                <div class="landing-metric-count" id="count-no-change">0</div>
+                <div class="landing-metric-label">NO CHANGE</div>
+              </div>
+            </div>
+
+            <button class="btn btn-glowing btn-go-grow" id="btn-go-grow">
+              GO GROW →
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           2. MY WATCHLIST VIEW (#watchlist-view)
+           ==================================================================== -->
+      <section id="watchlist-view" class="view">
+        <div class="watchlist-header">
+          <h2 class="page-title">MY WATCHLIST</h2>
+
+          <div class="watchlist-controls">
+            <div class="search-container">
+              <span class="search-icon-inside">🔍</span>
+              <input type="text" class="search-input" id="watchlist-filter-input" placeholder="Search stocks in watchlist...">
+            </div>
+
+            <button class="btn btn-secondary" id="btn-refresh-evaluations" title="Run batch thesis evaluation across all stocks">
+              <span class="icon">🔄</span> Re-evaluate
+            </button>
+
+            <button class="btn btn-primary" id="btn-open-add-stock">
+              + ADD
+            </button>
+          </div>
+        </div>
+
+        <div class="watchlist-list" id="watchlist-items-list">
+          <!-- Populated dynamically by watchlist.js -->
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           3. COMPANY DETAIL VIEW (#company-view)
+           ==================================================================== -->
+      <section id="company-view" class="view">
+        <a href="#/watchlist" class="back-link" id="btn-back-to-watchlist">← Back to My Watchlist</a>
+
+        <!-- Top Header Card -->
+        <div class="company-header-card">
+          <div class="company-title-area">
+            <div class="company-title-row">
+              <h2 class="company-display-name" id="company-name">Loading Company...</h2>
+              <span class="company-meta-tag" id="company-symbol">SYMBOL</span>
+              <span class="badge-freshness" id="company-exchange">NSE</span>
+              <span class="badge-freshness live" id="company-freshness">LIVE</span>
+            </div>
+            <div id="company-status-pill" style="margin-top: 0.35rem;">
+              <!-- Status badge dynamically injected -->
+            </div>
+          </div>
+
+          <div class="company-price-area">
+            <div class="price-box">
+              <div class="company-big-price" id="company-price">₹0.00</div>
+              <div class="company-big-change" id="company-change">0.00%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="tabs-bar">
+          <button class="tab-btn company-tab-btn active" data-tab="thesis">THESIS</button>
+          <button class="tab-btn company-tab-btn" data-tab="overview">OVERVIEW</button>
+          <button class="tab-btn company-tab-btn" data-tab="fundamentals">FUNDAMENTALS</button>
+          <button class="tab-btn company-tab-btn" data-tab="news">NEWS</button>
+          <button class="tab-btn company-tab-btn" data-tab="technicals">TECHNICALS</button>
+        </div>
+
+        <!-- Tab 1: THESIS (Default Selected) -->
+        <div class="company-tab-panel" data-panel="thesis">
+          <div class="thesis-tab-layout">
+            <div class="thesis-banner">
+              <div class="thesis-section-label">YOUR INVESTMENT THESIS • <span id="thesis-display-category">GROWTH</span></div>
+              <div class="thesis-quote-text" id="thesis-display-text">"Loading thesis..."</div>
+              <div class="thesis-status-row">
+                <div style="font-size: 0.85rem; color: var(--text-secondary);">
+                  Monitored real-world metrics and evidence are evaluated against this specific premise.
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem;">CURRENT EVIDENCE</h3>
+              <div class="signals-evidence-grid" id="thesis-signals-list">
+                <!-- Injected dynamically -->
+              </div>
+            </div>
+
+            <div class="see-changes-banner">
+              <div>
+                <div class="see-changes-text" id="thesis-signals-changed-note">Since your last check: 3 relevant signals changed.</div>
+                <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.2rem;">
+                  Inspect supporting vs contradicting data points and diagnostic reasoning.
+                </div>
+              </div>
+              <button class="btn btn-primary" id="btn-see-what-changed">
+                SEE WHAT CHANGED →
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: OVERVIEW -->
+        <div class="company-tab-panel" data-panel="overview" style="display: none;">
+          <div class="chart-container-card">
+            <div class="chart-controls-row">
+              <div style="font-weight: 700; font-size: 1rem;">Real Historical Price Chart</div>
+              <div class="range-selector-group">
+                <button class="range-btn" data-range="1D">1D</button>
+                <button class="range-btn" data-range="1W">1W</button>
+                <button class="range-btn active" data-range="1M">1M</button>
+                <button class="range-btn" data-range="6M">6M</button>
+                <button class="range-btn" data-range="1Y">1Y</button>
+                <button class="range-btn" data-range="5Y">5Y</button>
+                <button class="range-btn" data-range="ALL">ALL</button>
+              </div>
+            </div>
+            <div class="chart-canvas-wrapper">
+              <canvas id="company-price-chart" style="width: 100%; height: 100%;"></canvas>
+            </div>
+          </div>
+
+          <div class="metrics-grid-four">
+            <div class="metric-data-card">
+              <div class="metric-data-label">Today's High</div>
+              <div class="metric-data-val" id="stat-today-high">Loading...</div>
+            </div>
+            <div class="metric-data-card">
+              <div class="metric-data-label">Today's Low</div>
+              <div class="metric-data-val" id="stat-today-low">Loading...</div>
+            </div>
+            <div class="metric-data-card">
+              <div class="metric-data-label">52-Week High</div>
+              <div class="metric-data-val" id="stat-52-high">Loading...</div>
+            </div>
+            <div class="metric-data-card">
+              <div class="metric-data-label">52-Week Low</div>
+              <div class="metric-data-val" id="stat-52-low">Loading...</div>
+            </div>
+            <div class="metric-data-card">
+              <div class="metric-data-label">Market Capitalization</div>
+              <div class="metric-data-val" id="stat-market-cap">Loading...</div>
+            </div>
+            <div class="metric-data-card">
+              <div class="metric-data-label">Daily Volume</div>
+              <div class="metric-data-val" id="stat-volume">Loading...</div>
+            </div>
+            <div class="metric-data-card">
+              <div class="metric-data-label">P/E Multiple</div>
+              <div class="metric-data-val" id="stat-pe">Loading...</div>
+            </div>
+            <div class="metric-data-card">
+              <div class="metric-data-label">Market Status</div>
+              <div class="metric-data-val" id="stat-market-status">OPEN</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: FUNDAMENTALS -->
+        <div class="company-tab-panel" data-panel="fundamentals" style="display: none;">
+          <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem;">Key Fundamental Metrics</h3>
+          <div class="metrics-grid-four" id="fundamentals-metrics-grid">
+            <!-- Populated dynamically -->
+          </div>
+
+          <h3 style="font-size: 1.15rem; font-weight: 700; margin: 2rem 0 1rem;">Quarterly Financial History</h3>
+          <div class="card" style="padding: 0; overflow: hidden;">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Quarter</th>
+                    <th>Revenue</th>
+                    <th>Net Income</th>
+                    <th>Operating Margin</th>
+                  </tr>
+                </thead>
+                <tbody id="quarterly-table-body">
+                  <!-- Injected dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 4: NEWS -->
+        <div class="company-tab-panel" data-panel="news" style="display: none;">
+          <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem; color: #60a5fa;">RELEVANT TO YOUR THESIS</h3>
+          <div class="news-cards-container" id="relevant-news-container" style="margin-bottom: 2.5rem;">
+            <!-- Populated dynamically -->
+          </div>
+
+          <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem;">ALL COMPANY NEWS</h3>
+          <div class="news-cards-container" id="all-news-container">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+        <!-- Tab 5: TECHNICALS -->
+        <div class="company-tab-panel" data-panel="technicals" style="display: none;">
+          <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1rem;">Technical Indicators</h3>
+          <div class="metrics-grid-four">
+            <div class="metric-data-card">
+              <div class="metric-data-label">Overall Trend</div>
+              <div class="metric-data-val">
+                <span id="tech-trend-badge" class="status-pill nochange">NEUTRAL</span>
+              </div>
+            </div>
+            <div class="metric-data-card">
+              <div class="metric-data-label">RSI (14 Days)</div>
+              <div class="metric-data-val" id="tech-rsi-val">Loading...</div>
+            </div>
+            <div class="metric-data-card">
+              <div class="metric-data-label">MACD (12, 26, 9)</div>
+              <div class="metric-data-val" id="tech-macd-val">Loading...</div>
+            </div>
+            <div class="metric-data-card">
+              <div class="metric-data-label">20-Day Annualized Volatility</div>
+              <div class="metric-data-val" id="tech-volatility-val">Loading...</div>
+            </div>
+            <div class="metric-data-card">
+              <div class="metric-data-label">20-Day SMA</div>
+              <div class="metric-data-val" id="tech-sma20-val">Loading...</div>
+            </div>
+            <div class="metric-data-card">
+              <div class="metric-data-label">50-Day SMA</div>
+              <div class="metric-data-val" id="tech-sma50-val">Loading...</div>
+            </div>
+            <div class="metric-data-card">
+              <div class="metric-data-label">200-Day SMA</div>
+              <div class="metric-data-val" id="tech-sma200-val">Loading...</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ====================================================================
+           4. WHAT CHANGED? VIEW (#changes-view) — CORE DIFFERENTIATOR
+           ==================================================================== -->
+      <section id="changes-view" class="view">
+        <a href="#/company" class="back-link" id="btn-changes-back">← Back to Company Page</a>
+
+        <div class="changes-header-block">
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+            <h2 class="page-title">WHAT CHANGED?</h2>
+            <button class="btn btn-secondary" id="btn-re-evaluate">
+              🔄 Re-evaluate Live Signals
+            </button>
+          </div>
+
+          <div class="thesis-banner" style="margin-top: 1rem;">
+            <div class="thesis-section-label">YOUR INVESTMENT THESIS</div>
+            <div class="thesis-quote-text" id="changes-thesis-text">"Loading thesis..."</div>
+          </div>
+        </div>
+
+        <div class="evidence-columns-wrapper">
+          <!-- SUPPORTING YOUR THESIS -->
+          <div class="evidence-category-section">
+            <h3 class="evidence-category-title supporting">
+              <span>✓</span> SUPPORTING YOUR THESIS
+            </h3>
+            <div class="evidence-cards-list" id="evidence-supporting-list">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+
+          <!-- WORKING AGAINST YOUR THESIS -->
+          <div class="evidence-category-section">
+            <h3 class="evidence-category-title contradicting">
+              <span>⚠</span> WORKING AGAINST YOUR THESIS
+            </h3>
+            <div class="evidence-cards-list" id="evidence-contradicting-list">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+
+          <!-- NEUTRAL / OTHER RELEVANT CHANGES -->
+          <div class="evidence-category-section">
+            <h3 class="evidence-category-title neutral">
+              <span>ℹ</span> NEUTRAL / OTHER RELEVANT CHANGES
+            </h3>
+            <div class="evidence-cards-list" id="evidence-neutral-list">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Synthesis Diagnosis Card -->
+        <div class="thesis-synthesis-card">
+          <div class="synthesis-header">
+            <div>
+              <div style="font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.35rem;">
+                DIAGNOSTIC STATUS SYNTHESIS
+              </div>
+              <div id="synthesis-status-badge" class="status-pill nochange">
+                ⚪ NO MEANINGFUL CHANGE
+              </div>
+            </div>
+          </div>
+
+          <div class="synthesis-counts-line" id="synthesis-counts-line">
+            0 signals support your thesis • 0 signals work against it
+          </div>
+
+          <p class="synthesis-explanation" id="synthesis-explanation-text">
+            Evaluating real observations against baseline...
+          </p>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- ====================================================================
+         ADD STOCK MODAL DIALOG
+         ==================================================================== -->
+    <div class="modal-overlay" id="add-stock-modal">
+      <div class="modal-container">
+        <!-- Step 1: Search Company -->
+        <div id="modal-step-search">
+          <div class="modal-header">
+            <h3 class="modal-title">Search Company</h3>
+            <button class="modal-close-btn" id="btn-close-modal">&times;</button>
+          </div>
+
+          <div class="form-group" style="position: relative;">
+            <label class="form-label">Search real listed companies (NSE / BSE / Global)</label>
+            <input type="text" class="text-input" id="modal-search-input" placeholder="e.g. Reliance, Tata Motors, Infosys, KPITTECH, Apple..." autocomplete="off">
+            <span id="search-spinner" class="spinner" style="position: absolute; right: 12px; top: 38px; width: 18px; height: 18px; display: none;"></span>
+            <div class="search-results-dropdown" id="modal-search-results">
+              <!-- Search item results -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Define Thesis -->
+        <div id="modal-step-thesis" style="display: none;">
+          <div class="modal-header">
+            <div>
+              <div style="font-size: 0.75rem; font-weight: 700; color: var(--brand-primary); text-transform: uppercase;">ADD TO WATCHLIST</div>
+              <h3 class="modal-title" id="modal-selected-company">RELIANCE INDUSTRIES</h3>
+              <span id="modal-selected-symbol" class="company-meta-tag" style="margin-top: 0.25rem; display: inline-block;">RELIANCE.NS</span>
+            </div>
+            <button class="modal-close-btn" onclick="window.addStockModal.close()">&times;</button>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Why are you watching this stock?</label>
+            <div class="category-grid">
+              <label class="cat-pill-label selected">
+                <input type="radio" name="thesis-cat" value="Growth" checked> Growth
+              </label>
+              <label class="cat-pill-label">
+                <input type="radio" name="thesis-cat" value="Valuation"> Valuation
+              </label>
+              <label class="cat-pill-label">
+                <input type="radio" name="thesis-cat" value="Business performance"> Business performance
+              </label>
+              <label class="cat-pill-label">
+                <input type="radio" name="thesis-cat" value="Risk"> Risk
+              </label>
+              <label class="cat-pill-label">
+                <input type="radio" name="thesis-cat" value="Event"> Event
+              </label>
+              <label class="cat-pill-label">
+                <input type="radio" name="thesis-cat" value="Price"> Price
+              </label>
+              <label class="cat-pill-label">
+                <input type="radio" name="thesis-cat" value="Industry / sector"> Industry / sector
+              </label>
+              <label class="cat-pill-label">
+                <input type="radio" name="thesis-cat" value="Other"> Other
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">OR Tell us in your own words</label>
+            <textarea class="text-input text-area" id="modal-thesis-text" placeholder="e.g. I think Jio growth will continue and improve Reliance's performance."></textarea>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem;">
+              The intelligence engine parses your text into structured signals (revenue, margins, deal pipeline, valuation, commentary).
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem;">
+            <button class="btn btn-secondary" id="btn-back-to-search">Back</button>
+            <button class="btn btn-primary" id="btn-confirm-add-stock">ADD TO WATCHLIST</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts in dependency order -->
+  <script src="/static/js/api.js"></script>
+  <script src="/static/js/state.js"></script>
+  <script src="/static/js/charts.js"></script>
+  <script src="/static/js/home.js"></script>
+  <script src="/static/js/watchlist.js"></script>
+  <script src="/static/js/add-stock.js"></script>
+  <script src="/static/js/company.js"></script>
+  <script src="/static/js/changes.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

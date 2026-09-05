@@ -2,7 +2,9 @@ from backend.app.models import CheckSession
 import logging
 from typing import List, Optional
 from datetime import datetime, timezone
+# pyrefly: ignore [missing-import]
 from fastapi import APIRouter, Depends, HTTPException, status
+# pyrefly: ignore [missing-import]
 from sqlalchemy.orm import Session
 
 from backend.app.db.database import get_db
